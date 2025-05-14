@@ -2062,9 +2062,6 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
         } else {
                 stream = find_source_by_port(control, new_port_info->name);
         }
-        if (stream) {
-                printf("stream %s\n", gvc_mixer_stream_get_description (stream));
-        }
 
 
         for (d = devices; d != NULL; d = d->next) {
@@ -2107,7 +2104,22 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
                                                0,
                                                gvc_mixer_ui_device_get_id (device));
                         }
+
+                        if (stream && is_available){
+                                const char *description = gvc_mixer_stream_get_description (stream);
+                                if (g_strcmp0(description, gvc_mixer_ui_device_get_description(device)) != 0){
+                                        g_object_set (G_OBJECT (device),
+                                              "description", description,
+                                              NULL);
+                                              g_signal_emit (G_OBJECT (control),
+                                               is_output ? signals[OUTPUT_ADDED] : signals[INPUT_ADDED],
+                                               0,
+                                               gvc_mixer_ui_device_get_id (device));
+                                }
+                        }
+
                }
+
                g_free (device_port_name);
         }
 
