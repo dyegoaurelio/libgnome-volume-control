@@ -1447,6 +1447,8 @@ translate_pa_state (pa_sink_state_t state) {
         }
 }
 
+static void req_update_card(GvcMixerControl *control, int index);
+
 /*
  * Called when anything changes with a sink.
  */
@@ -1582,6 +1584,10 @@ update_sink (GvcMixerControl    *control,
                 map = (GvcChannelMap *) gvc_mixer_stream_get_channel_map (stream);
 
         gvc_channel_map_volume_changed (map, &info->volume, FALSE);
+
+        // This is a bit of a hack, but card updates happen before sink updates
+        // and pipewire ui devices need some sink information to be set.
+        req_update_card(control, info->card);
 }
 
 static void
@@ -1978,6 +1984,66 @@ update_ui_device_on_port_added (GvcMixerControl  *control,
                  available);
 }
 
+/**
+ * find_sink_by_port:
+ * @control: (in): A pointer to the GvcMixerControl instance.
+ * @port_name: (in): The name of the port to search for.
+ *
+ * Finds the sink associated with the given port name.
+ *
+ * Returns: (transfer none): A pointer to the GvcMixerStream if found, or NULL otherwise.
+ */
+ static GvcMixerStream *
+ find_sink_by_port(GvcMixerControl *control, const char *port_name)
+ {
+         GHashTableIter iter;
+         gpointer key, value;
+         GvcMixerStream *sink = NULL;
+
+         g_hash_table_iter_init(&iter, control->priv->sinks);
+         while (g_hash_table_iter_next(&iter, &key, &value)) {
+                 sink = GVC_MIXER_STREAM(value);
+                 const GvcMixerStreamPort *active_port = gvc_mixer_stream_get_port(sink);
+
+                 if (active_port && g_strcmp0(active_port->port, port_name) == 0) {
+                         return sink;
+                 }
+         }
+ 
+         return NULL;
+ }
+
+
+ /**
+ * find_source_by_port:
+ * @control: (in): A pointer to the GvcMixerControl instance.
+ * @port_name: (in): The name of the port to search for.
+ *
+ * Finds the source associated with the given port name.
+ *
+ * Returns: (transfer none): A pointer to the GvcMixerStream if found, or NULL otherwise.
+ */
+static GvcMixerStream *
+find_source_by_port(GvcMixerControl *control, const char *port_name)
+{
+        GHashTableIter iter;
+        gpointer key, value;
+        GvcMixerStream *source = NULL;
+
+        g_hash_table_iter_init(&iter, control->priv->sources);
+        while (g_hash_table_iter_next(&iter, &key, &value)) {
+                source = GVC_MIXER_STREAM(value);
+                const GvcMixerStreamPort *active_port = gvc_mixer_stream_get_port(source);
+
+                if (active_port && g_strcmp0(active_port->port, port_name) == 0) {
+                        return source;
+                }
+        }
+
+        return NULL;
+}
+
+
 static void
 update_ui_device_on_port_changed (GvcMixerControl   *control,
                                   GvcMixerCardPort  *card_port,
@@ -1990,6 +2056,16 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
         gboolean                 is_output = is_card_port_an_output (card_port);
 
         devices  = g_hash_table_get_values (is_output ? control->priv->ui_outputs : control->priv->ui_inputs);
+        GvcMixerStream *stream = NULL;
+        if (is_output) {
+                stream = find_sink_by_port(control, new_port_info->name);
+        } else {
+                stream = find_source_by_port(control, new_port_info->name);
+        }
+        if (stream) {
+                printf("stream %s\n", gvc_mixer_stream_get_description (stream));
+        }
+
 
         for (d = devices; d != NULL; d = d->next) {
                 GvcMixerCard *device_card;
