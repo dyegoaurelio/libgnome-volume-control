@@ -70,6 +70,7 @@ struct GvcMixerControlPrivate
         char             *name;
 
         gboolean          default_sink_is_set;
+        gboolean          is_pipewire_pulse_driver;
         guint             default_sink_id;
         char             *default_sink_name;
         gboolean          default_source_is_set;
@@ -1184,6 +1185,14 @@ update_server (GvcMixerControl      *control,
                 g_debug ("update server");
                 update_default_sink_from_name (control, info->default_sink_name);
         }
+
+        if (info->server_name && strstr(info->server_name, "PipeWire") != NULL) {
+                g_debug ("Server is pipewire-pulse: %s", info->server_name);
+                control->priv->is_pipewire_pulse_driver = TRUE;
+        } else {
+                g_debug ("Server is not pipewire-pulse: %s", info->server_name);
+                control->priv->is_pipewire_pulse_driver = FALSE;
+        }
 }
 
 static void
@@ -2074,10 +2083,15 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
 
         devices  = g_hash_table_get_values (is_output ? control->priv->ui_outputs : control->priv->ui_inputs);
         GvcMixerStream *stream = NULL;
-        if (is_output) {
-                stream = find_sink_by_port(control, card, new_port_info->name);
-        } else {
-                stream = find_source_by_port(control, card, new_port_info->name);
+        /** the stream is only used to look up the node description for pipewire-pulse devices
+         * so, no need to find it if we're not on pipewire.
+         */
+        if (control -> priv -> is_pipewire_pulse_driver){
+                if (is_output) {
+                        stream = find_sink_by_port(control, card, new_port_info->name);
+                } else {
+                        stream = find_source_by_port(control, card, new_port_info->name);
+                }
         }
 
 
@@ -2122,17 +2136,16 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
                                                gvc_mixer_ui_device_get_id (device));
                         }
 
-                        if (stream && is_available){
+                        if (control->priv->is_pipewire_pulse_driver && stream && is_available){
                                 const char *description = gvc_mixer_stream_get_description (stream);
-                                if (g_strcmp0(description, gvc_mixer_ui_device_get_description(device)) != 0){
-                                        g_object_set (G_OBJECT (device),
-                                              "description", description,
-                                              NULL);
-                                              g_signal_emit (G_OBJECT (control),
-                                               is_output ? signals[OUTPUT_ADDED] : signals[INPUT_ADDED],
-                                               0,
-                                               gvc_mixer_ui_device_get_id (device));
-                                }
+                                g_object_set (G_OBJECT (device),
+                                        "description", description,
+                                        "origin", "\0",
+                                        NULL);
+                                g_signal_emit (G_OBJECT (control),
+                                        is_output ? signals[OUTPUT_ADDED] : signals[INPUT_ADDED],
+                                        0,
+                                        gvc_mixer_ui_device_get_id (device));
                         }
 
                }
