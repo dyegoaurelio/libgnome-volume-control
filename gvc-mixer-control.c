@@ -1456,8 +1456,6 @@ translate_pa_state (pa_sink_state_t state) {
         }
 }
 
-static void req_update_card(GvcMixerControl *control, int index);
-
 /*
  * Called when anything changes with a sink.
  */
