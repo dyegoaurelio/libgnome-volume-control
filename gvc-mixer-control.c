@@ -2141,9 +2141,11 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
                         }
 
                         if (control->priv->is_pipewire_pulse_driver && stream && is_available){
+                                // respecting the pipewire-pulse device description
                                 const char *description = gvc_mixer_stream_get_description (stream);
                                 g_object_set (G_OBJECT (device),
                                         "description", description,
+                                        // clearing the origin so ui widgets only display the description
                                         "origin", "\0",
                                         NULL);
                                 g_signal_emit (G_OBJECT (control),
