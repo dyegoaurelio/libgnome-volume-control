@@ -2149,7 +2149,6 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
                                         0,
                                         gvc_mixer_ui_device_get_id (device));
                         }
-
                }
                g_free (device_port_name);
         }
