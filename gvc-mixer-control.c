@@ -2019,6 +2019,10 @@ find_sink_by_port (GvcMixerControl *control, GvcMixerCard *card, const char *por
           continue; // Skip streams not associated with the given card
         }
 
+        if (gvc_mixer_stream_get_ports(sink) == NULL) {
+          continue;
+        }
+
       const GvcMixerStreamPort *active_port = gvc_mixer_stream_get_port (sink);
       if (active_port && g_strcmp0 (active_port->port, port_name) == 0)
         {
@@ -2055,6 +2059,10 @@ find_source_by_port (GvcMixerControl *control, GvcMixerCard *card, const char *p
       if (card_idx != gvc_mixer_card_get_index(card))
         {
           continue; // Skip streams not associated with the given card
+        }
+
+        if (gvc_mixer_stream_get_ports(source) == NULL) {
+          continue;
         }
 
       const GvcMixerStreamPort *active_port = gvc_mixer_stream_get_port (source);
