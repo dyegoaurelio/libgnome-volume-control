@@ -2075,7 +2075,6 @@ find_source_by_port (GvcMixerControl *control, GvcMixerCard *card, const char *p
   return NULL;
 }
 
-
 static void
 update_ui_device_on_port_changed (GvcMixerControl   *control,
                                   GvcMixerCardPort  *card_port,
@@ -2099,7 +2098,6 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
                         stream = find_source_by_port(control, card, new_port_info->name);
                 }
         }
-
 
         for (d = devices; d != NULL; d = d->next) {
                 GvcMixerCard *device_card;
@@ -2155,7 +2153,6 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
                         }
 
                }
-
                g_free (device_port_name);
         }
 
