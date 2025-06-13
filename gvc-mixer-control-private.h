@@ -29,7 +29,6 @@
 G_BEGIN_DECLS
 
 pa_context *        gvc_mixer_control_get_pa_context      (GvcMixerControl *control);
-static void req_update_card(GvcMixerControl *control, int index);
 
 G_END_DECLS
 

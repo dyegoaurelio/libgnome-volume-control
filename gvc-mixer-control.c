@@ -1591,10 +1591,6 @@ update_sink (GvcMixerControl    *control,
                 map = (GvcChannelMap *) gvc_mixer_stream_get_channel_map (stream);
 
         gvc_channel_map_volume_changed (map, &info->volume, FALSE);
-
-        // This is a bit of a hack, but card updates happen before sink updates
-        // and pipewire ui devices need some sink information to be set.
-        req_update_card(control, info->card);
 }
 
 static void
@@ -3489,6 +3485,8 @@ gvc_mixer_control_ready (GvcMixerControl *control)
         req_update_source_info (control, -1);
         req_update_sink_input_info (control, -1);
         req_update_source_output_info (control, -1);
+        // updating cards again so sink and sources are available
+        req_update_card (control, -1);
 
         control->priv->server_protocol_version = pa_context_get_server_protocol_version (control->priv->pa_context);
 
