@@ -2002,6 +2002,7 @@ update_ui_device_on_port_added (GvcMixerControl  *control,
 static GvcMixerStream *
 find_sink_by_port_name (GvcMixerControl *control, GvcMixerCard *card, const char *port_name)
 {
+  const GList *l;
   GHashTableIter iter;
   gpointer key, value;
   GvcMixerStream *sink = NULL;
@@ -2011,20 +2012,18 @@ find_sink_by_port_name (GvcMixerControl *control, GvcMixerCard *card, const char
     {
       sink = GVC_MIXER_STREAM (value);
 
-      const guint card_idx = gvc_mixer_stream_get_card_index (sink);
-      if (card_idx != gvc_mixer_card_get_index(card))
+      if (gvc_mixer_stream_get_card_index (sink) != gvc_mixer_card_get_index (card))
         {
           continue; // Skip streams not associated with the given card
         }
 
-        if (gvc_mixer_stream_get_ports(sink) == NULL) {
-          continue;
-        }
-
-      const GvcMixerStreamPort *active_port = gvc_mixer_stream_get_port (sink);
-      if (active_port && g_strcmp0 (active_port->port, port_name) == 0)
+      for (l = gvc_mixer_stream_get_ports (sink); l != NULL; l = l->next)
         {
-          return sink;
+          const GvcMixerStreamPort *port = l->data;
+          if (port && g_strcmp0 (port->port, port_name) == 0)
+            {
+              return sink;
+            }
         }
     }
 
@@ -2042,6 +2041,7 @@ find_sink_by_port_name (GvcMixerControl *control, GvcMixerCard *card, const char
 static GvcMixerStream *
 find_source_by_port_name (GvcMixerControl *control, GvcMixerCard *card, const char *port_name)
 {
+  const GList *l;
   GHashTableIter iter;
   gpointer key, value;
   GvcMixerStream *source = NULL;
@@ -2051,20 +2051,18 @@ find_source_by_port_name (GvcMixerControl *control, GvcMixerCard *card, const ch
     {
       source = GVC_MIXER_STREAM (value);
 
-      const guint card_idx = gvc_mixer_stream_get_card_index (source);
-      if (card_idx != gvc_mixer_card_get_index(card))
+      if (gvc_mixer_stream_get_card_index (source) != gvc_mixer_card_get_index (card))
         {
           continue; // Skip streams not associated with the given card
         }
 
-        if (gvc_mixer_stream_get_ports(source) == NULL) {
-          continue;
-        }
-
-      const GvcMixerStreamPort *active_port = gvc_mixer_stream_get_port (source);
-      if (active_port && g_strcmp0 (active_port->port, port_name) == 0)
+      for (l = gvc_mixer_stream_get_ports (source); l != NULL; l = l->next)
         {
-          return source;
+          const GvcMixerStreamPort *port = l->data;
+          if (port && g_strcmp0 (port->port, port_name) == 0)
+            {
+              return source;
+            }
         }
     }
 
