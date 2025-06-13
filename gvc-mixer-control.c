@@ -1992,17 +1992,15 @@ update_ui_device_on_port_added (GvcMixerControl  *control,
 }
 
 /**
- * find_sink_by_port:
- * @control: (in): A pointer to the GvcMixerControl instance.
- * @card: (in): A pointer to the GvcMixerCard instance.
- * @port_name: (in): The name of the port to search for.
- *
- * Finds the sink associated with the given port name.
+ * find_sink_by_port_name:
+ * @control:
+ * @card:
+ * @port_name:
  *
  * Returns: (transfer none): A pointer to the GvcMixerStream if found, or NULL otherwise.
  */
 static GvcMixerStream *
-find_sink_by_port (GvcMixerControl *control, GvcMixerCard *card, const char *port_name)
+find_sink_by_port_name (GvcMixerControl *control, GvcMixerCard *card, const char *port_name)
 {
   GHashTableIter iter;
   gpointer key, value;
@@ -2034,17 +2032,15 @@ find_sink_by_port (GvcMixerControl *control, GvcMixerCard *card, const char *por
 }
 
 /**
- * find_source_by_port:
- * @control: (in): A pointer to the GvcMixerControl instance.
- * @card: (in): A pointer to the GvcMixerCard instance.
- * @port_name: (in): The name of the port to search for.
- *
- * Finds the source associated with the given port name.
+ * find_source_by_port_name:
+ * @control:
+ * @card:
+ * @port_name:
  *
  * Returns: (transfer none): A pointer to the GvcMixerStream if found, or NULL otherwise.
  */
 static GvcMixerStream *
-find_source_by_port (GvcMixerControl *control, GvcMixerCard *card, const char *port_name)
+find_source_by_port_name (GvcMixerControl *control, GvcMixerCard *card, const char *port_name)
 {
   GHashTableIter iter;
   gpointer key, value;
@@ -2093,9 +2089,9 @@ update_ui_device_on_port_changed (GvcMixerControl   *control,
          */
         if (control -> priv -> is_pipewire_pulse_driver){
                 if (is_output) {
-                        stream = find_sink_by_port(control, card, new_port_info->name);
+                        stream = find_sink_by_port_name(control, card, new_port_info->name);
                 } else {
-                        stream = find_source_by_port(control, card, new_port_info->name);
+                        stream = find_source_by_port_name(control, card, new_port_info->name);
                 }
         }
 
